@@ -2,6 +2,10 @@
 
 Generate GitHub-style identicons (those colorful 5x5 pixel-art profile pictures).
 
+This implementation matches the original unofficial Rust identicon library algorithm[^1].
+
+[^1]: There is no official release of the algorithm, but a GitHub employee ported it to Rust and published it at https://github.com/dgraham/identicon
+
 ![Example collage](wall.png)
 
 It can generate **single identicons** (one image from any text input), **collages** (creates grids of multiple identicons). It is **deterministic**, so the same input always produces the same image. Lastly, it is highly **customizable** - you can adjust the size, the padding, and the grid layout.
@@ -100,18 +104,32 @@ GitHub identicons are 5x5 grids with **horizontal mirror symmetry**:
 
 **Algorithm:**
 
-1. Hash the input text (lowercased) with MD5 --> output is 16 bytes
+1. Hash the input text with MD5 --> 16 bytes
 2. Use bytes 12-15 to derive an HSL color (pastel range)
-3. Use bytes 0-14 to determine which of the 15 cells are filled
+3. Use nibbles (4-bit chunks) from bytes 0-14 to determine which of the 15 cells are filled
 4. Mirror the left half to create the symmetric pattern
 5. Render with a light gray background and padding
+
+## Generating your GitHub identicon
+
+To generate your actual GitHub identicon, you need to use your **user ID** (not username). You can get it from the GitHub API:
+
+```bash
+curl "https://api.github.com/users/<username>"
+```
+
+The field you need is `id`. Then pass it to the script:
+
+```bash
+python github_faces.py "<user_id>" avatar.png
+```
+
+You can also get your original GitHub identicon from the following link: [https://github.com/identicons/YOUR_USERNAME.png](https://github.com/identicons/YOUR_USERNAME.png).
 
 ## Limitations
 
 > [!NOTE]
-> GitHub's exact algorithm is not publicly documented. This implementation produces **visually similar** identicons but won't pixel-match real GitHub avatars.
-
-GitHub likely hashes an internal user ID, not the username. The exact byte-to-color mapping is unknown.
+> GitHub's exact algorithm is not publicly documented. This implementation produces **visually similar** identicons but may not pixel-match real GitHub avatars due to potential differences in rendering.
 
 ## License
 
